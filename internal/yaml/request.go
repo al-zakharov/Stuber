@@ -6,13 +6,11 @@ import (
 )
 
 type Stub struct {
-	Name        string `yaml:"name"`
-	Description string `yaml:"description"`
-	HttpMethod  string `yaml:"http_method"`
-	Endpoint    string `yaml:"endpoint"`
-	Body        string `yaml:"body"`
-	BodyPath    string `yaml:"body_path"`
-	Status      string `yaml:"status"`
+	HttpMethod string `yaml:"http_method"`
+	Path       string `yaml:"path"`
+	Body       string `yaml:"body"`
+	BodyPath   string `yaml:"body_path"`
+	Status     int    `yaml:"status"`
 }
 
 func NewStub(stubFilePath string) (*Stub, error) {

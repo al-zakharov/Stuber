@@ -1,7 +1,5 @@
-name: test
-description: test
 http_method: GET
-endpoint: /api/foo/bar
+path: /api/foo/bar
 body: |
   {
     "test": 123,
