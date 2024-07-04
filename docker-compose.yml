@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  stuber:
+    build:
+      context: .
+    volumes:
+      - ./example:/example
+#    command:
+#      - stuber up -f ./conffig.yaml
