@@ -1,8 +1,8 @@
 package main
 
 import (
-	"Stuber/cmd/stuber/command"
 	"os"
+	"stuber/cmd/stuber/command"
 )
 
 func main() {

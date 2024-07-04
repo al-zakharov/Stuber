@@ -6,5 +6,4 @@ services:
       context: .
     volumes:
       - ./example:/example
-#    command:
-#      - stuber up -f ./conffig.yaml
+    command: [ "up", "-f", "/example/config.yaml" ]

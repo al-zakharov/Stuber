@@ -1,4 +1,4 @@
-module Stuber
+module stuber
 
 go 1.22
 
