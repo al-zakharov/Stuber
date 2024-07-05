@@ -14,12 +14,6 @@ collection:
   custom_name2:
     http_method: GET
     path: /api/foo/bar
-    body: |
-      {
-        "test": 123,
-        "name": "yoda",
-        "prices": [123.123,321.321]
-      }
     body_path: ./json/test.json
     status: 200
 

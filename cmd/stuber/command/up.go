@@ -28,17 +28,8 @@ func init() {
 			if err != nil {
 				fmt.Println(err)
 			}
-			stubCollection := make([]*router.Stub, 0)
 
-			for _, yamlStub := range yamlStubCollection.Items {
-				stubCollection = append(stubCollection, &router.Stub{
-					HttpMethod: yamlStub.HttpMethod,
-					Path:       yamlStub.Path,
-					Body:       yamlStub.Body,
-					Status:     yamlStub.Status,
-				})
-			}
-			router.Register(stubCollection)
+			router.Run(yamlStubCollection.MapToStubs())
 		},
 	}
 	cmdInitStub.Flags().StringVarP(&filePath, "file", "f", "", "Path to the file")

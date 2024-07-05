@@ -3,6 +3,7 @@ package yaml
 import (
 	"gopkg.in/yaml.v3"
 	"os"
+	"stuber/internal/router"
 )
 
 type StubCollection struct {
@@ -17,17 +18,31 @@ type Stub struct {
 	Status     int    `yaml:"status"`
 }
 
+func (c *StubCollection) MapToStubs() []*router.Stub {
+	s := make([]*router.Stub, 0)
+	for _, i := range c.Items {
+		s = append(s, &router.Stub{
+			HttpMethod: i.HttpMethod,
+			Path:       i.Path,
+			Body:       i.Body,
+			Status:     i.Status,
+		})
+	}
+
+	return s
+}
+
 func NewStubCollection(stubFilePath string) (*StubCollection, error) {
-	var sc StubCollection
+	var c StubCollection
 
 	f, err := os.ReadFile(stubFilePath)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := yaml.Unmarshal(f, &sc); err != nil {
+	if err := yaml.Unmarshal(f, &c); err != nil {
 		return nil, err
 	}
 
-	return &sc, nil
+	return &c, nil
 }
