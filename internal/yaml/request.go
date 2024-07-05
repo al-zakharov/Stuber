@@ -5,6 +5,10 @@ import (
 	"os"
 )
 
+type StubCollection struct {
+	Items map[string]*Stub `yaml:"collection"`
+}
+
 type Stub struct {
 	HttpMethod string `yaml:"http_method"`
 	Path       string `yaml:"path"`
@@ -13,17 +17,17 @@ type Stub struct {
 	Status     int    `yaml:"status"`
 }
 
-func NewStub(stubFilePath string) (*Stub, error) {
-	var s *Stub
+func NewStubCollection(stubFilePath string) (*StubCollection, error) {
+	var sc StubCollection
 
-	c, err := os.ReadFile(stubFilePath)
+	f, err := os.ReadFile(stubFilePath)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := yaml.Unmarshal(c, &s); err != nil {
+	if err := yaml.Unmarshal(f, &sc); err != nil {
 		return nil, err
 	}
 
-	return s, nil
+	return &sc, nil
 }

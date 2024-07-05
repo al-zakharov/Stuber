@@ -4,6 +4,8 @@ services:
   stuber:
     build:
       context: .
+    ports:
+      - "8080:8080"
     volumes:
       - ./example:/example
     command: [ "up", "-f", "/example/config.yaml" ]
