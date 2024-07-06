@@ -3,7 +3,7 @@ package router
 import (
 	"log"
 	"net/http"
-	"stuber/internal/router/request_collector"
+	rc "stuber/internal/router/request_collector"
 )
 
 type Router struct {
@@ -11,12 +11,14 @@ type Router struct {
 }
 
 func Run(stubCollection []*Stub) {
-	//h := make([]*request_collector.RequestRecord, 0)
-	//sh := make(map[string][]*request_collector.RequestRecord)
+	h := make([]*rc.RequestRecord, 0)
+	sh := make(map[string][]*rc.RequestRecord)
 
 	for _, s := range stubCollection {
-		http.HandleFunc(s.Path, request_collector.MakeCollectorHandler(s.makeStubHandler()))
+		http.HandleFunc(s.Path, rc.MakeHistoryHandler(&h, rc.MakeCollectorHandler(sh, "", s.makeStubHandler())))
 	}
+
+	http.HandleFunc("/income_request/last", rc.MakeLastRequestHandler(&h))
 
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatal(err)

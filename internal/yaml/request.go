@@ -18,6 +18,20 @@ type Stub struct {
 	Status     int    `yaml:"status"`
 }
 
+func NewStubCollection(stubFilePath string) (*StubCollection, error) {
+	f, err := os.ReadFile(stubFilePath)
+	if err != nil {
+		return nil, err
+	}
+
+	var c StubCollection
+	if err := yaml.Unmarshal(f, &c); err != nil {
+		return nil, err
+	}
+
+	return &c, nil
+}
+
 func (c *StubCollection) MapToStubs() []*router.Stub {
 	s := make([]*router.Stub, 0)
 	for _, i := range c.Items {
@@ -30,19 +44,4 @@ func (c *StubCollection) MapToStubs() []*router.Stub {
 	}
 
 	return s
-}
-
-func NewStubCollection(stubFilePath string) (*StubCollection, error) {
-	var c StubCollection
-
-	f, err := os.ReadFile(stubFilePath)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := yaml.Unmarshal(f, &c); err != nil {
-		return nil, err
-	}
-
-	return &c, nil
 }
