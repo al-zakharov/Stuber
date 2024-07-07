@@ -5,15 +5,26 @@ import (
 	"encoding/json"
 	"github.com/tidwall/gjson"
 	"io"
+	"log"
 	"net/http"
 	"stuber/internal/router/stub"
 )
 
 func MakeHistoryHandler(h *[]*RequestRecord, n http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		//TODO handle error
-		b, _ := io.ReadAll(r.Body)
-		ub, _ := unmarshalBody(b)
+		b, err := io.ReadAll(r.Body)
+		if err != nil {
+			log.Printf("Error reading request body: %v", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		ub, err := unmarshalBody(b)
+		if err != nil {
+			log.Printf("Error unmarshaling request body: %v", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		}
+
 		r.Body = io.NopCloser(bytes.NewBuffer(b))
 		*h = append(*h, NewRequestRecord(r.Method, r.URL.String(), ub))
 
@@ -24,8 +35,19 @@ func MakeHistoryHandler(h *[]*RequestRecord, n http.Handler) http.HandlerFunc {
 func MakeCollectorHandler(c map[string][]*RequestRecord, cp *stub.CollectParams, n http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if cp != nil {
-			b, _ := io.ReadAll(r.Body)
-			ub, _ := unmarshalBody(b)
+			b, err := io.ReadAll(r.Body)
+			if err != nil {
+				log.Printf("Error reading request body: %v", err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+
+			ub, err := unmarshalBody(b)
+			if err != nil {
+				log.Printf("Error unmarshaling request body: %v", err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			}
+
 			key := ""
 
 			switch cp.Type {
@@ -53,7 +75,9 @@ func MakeCollectorHandler(c map[string][]*RequestRecord, cp *stub.CollectParams,
 func MakeAllRequestsHandler(h *[]*RequestRecord) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(h)
+		if err := json.NewEncoder(w).Encode(h); err != nil {
+			log.Printf("Error encoding response: %v", err)
+		}
 	}
 }
 
@@ -61,7 +85,9 @@ func MakeLastRequestHandler(h *[]*RequestRecord) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		if len(*h) > 0 {
-			json.NewEncoder(w).Encode((*h)[len(*h)-1])
+			if err := json.NewEncoder(w).Encode((*h)[len(*h)-1]); err != nil {
+				log.Printf("Error encoding response: %v", err)
+			}
 		}
 	}
 }
@@ -71,7 +97,9 @@ func MakeGetCollectionHandler(c map[string][]*RequestRecord) http.HandlerFunc {
 		srp := r.URL.Query().Get(SearchRequestParam)
 		w.WriteHeader(http.StatusOK)
 		if e, ok := c[srp]; ok {
-			json.NewEncoder(w).Encode(e)
+			if err := json.NewEncoder(w).Encode(e); err != nil {
+				log.Printf("Error encoding response: %v", err)
+			}
 		}
 	}
 }
