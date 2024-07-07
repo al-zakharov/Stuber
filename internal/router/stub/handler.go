@@ -1,11 +1,11 @@
-package router
+package stub
 
 import (
 	"fmt"
 	"net/http"
 )
 
-func (s *Stub) makeStubHandler() http.HandlerFunc {
+func (s *Stub) MakeStubHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != s.HttpMethod {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

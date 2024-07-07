@@ -3,7 +3,7 @@ package yaml
 import (
 	"gopkg.in/yaml.v3"
 	"os"
-	"stuber/internal/router"
+	"stuber/internal/router/stub"
 )
 
 type StubCollection struct {
@@ -11,11 +11,16 @@ type StubCollection struct {
 }
 
 type Stub struct {
-	HttpMethod string `yaml:"http_method"`
-	Path       string `yaml:"path"`
-	Body       string `yaml:"body"`
-	BodyPath   string `yaml:"body_path"`
-	Status     int    `yaml:"status"`
+	HttpMethod    string         `yaml:"http_method"`
+	Path          string         `yaml:"path"`
+	Body          string         `yaml:"body"`
+	BodyPath      string         `yaml:"body_path"`
+	Status        int            `yaml:"status"`
+	CollectParams *CollectParams `yaml:"collect_params"`
+}
+
+type CollectParams struct {
+	JsonPath string `yaml:"json_path"`
 }
 
 func NewStubCollection(stubFilePath string) (*StubCollection, error) {
@@ -32,14 +37,19 @@ func NewStubCollection(stubFilePath string) (*StubCollection, error) {
 	return &c, nil
 }
 
-func (c *StubCollection) MapToStubs() []*router.Stub {
-	s := make([]*router.Stub, 0)
+func (c *StubCollection) MapToStubs() []*stub.Stub {
+	s := make([]*stub.Stub, 0)
 	for _, i := range c.Items {
-		s = append(s, &router.Stub{
-			HttpMethod: i.HttpMethod,
-			Path:       i.Path,
-			Body:       i.Body,
-			Status:     i.Status,
+		if i.CollectParams != nil {
+
+		}
+
+		s = append(s, &stub.Stub{
+			HttpMethod:    i.HttpMethod,
+			Path:          i.Path,
+			Body:          i.Body,
+			Status:        i.Status,
+			CollectParams: collectSettings,
 		})
 	}
 

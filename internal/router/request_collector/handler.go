@@ -2,9 +2,10 @@ package request_collector
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/tidwall/gjson"
 	"io"
 	"net/http"
+	"stuber/internal/router/stub"
 )
 
 func MakeHistoryHandler(h *[]*RequestRecord, n http.Handler) http.HandlerFunc {
@@ -19,12 +20,27 @@ func MakeHistoryHandler(h *[]*RequestRecord, n http.Handler) http.HandlerFunc {
 	}
 }
 
-func MakeCollectorHandler(c map[string][]*RequestRecord, k string, n http.Handler) http.HandlerFunc {
+func MakeCollectorHandler(c map[string][]*RequestRecord, cp *stub.CollectParams, n http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if k != "" {
-			//TODO handle error
+		rp := r.URL.Query().Get(SaveRequestParam)
+		if rp != "" {
 			b, _ := io.ReadAll(r.Body)
 			ub, _ := unmarshalBody(b)
+
+			if _, ok := c[rp]; !ok {
+				c[rp] = make([]*RequestRecord, 0)
+			}
+
+			c[rp] = append(c[rp], &RequestRecord{
+				HTTPMethod: r.Method,
+				URL:        r.URL.String(),
+				Body:       ub,
+			})
+		} else if cp != nil && cp.Value != "" {
+			b, _ := io.ReadAll(r.Body)
+			ub, _ := unmarshalBody(b)
+
+			k := gjson.GetBytes(b, cp.Value).String()
 
 			if _, ok := c[k]; !ok {
 				c[k] = make([]*RequestRecord, 0)
@@ -57,11 +73,12 @@ func MakeLastRequestHandler(h *[]*RequestRecord) http.HandlerFunc {
 	}
 }
 
-func MakeGetCollectionHandler(c map[string][]*RequestRecord, q string) http.HandlerFunc {
+func MakeGetCollectionHandler(c map[string][]*RequestRecord) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		gp := r.URL.Query().Get(SaveRequestParam)
 		w.WriteHeader(http.StatusOK)
 		if e, ok := c[q]; ok {
-			fmt.Fprint(w, e)
+			json.NewEncoder(w).Encode(e)
 		}
 	}
 }
