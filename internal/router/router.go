@@ -15,10 +15,11 @@ func Run(stubCollection []*Stub) {
 	sh := make(map[string][]*rc.RequestRecord)
 
 	for _, s := range stubCollection {
-		http.HandleFunc(s.Path, rc.MakeHistoryHandler(&h, rc.MakeCollectorHandler(sh, "", s.makeStubHandler())))
+		http.HandleFunc(s.Path, rc.MakeHistoryHandler(&h, rc.MakeCollectorHandler(sh, s.RequestIdKey, s.makeStubHandler())))
 	}
 
 	http.HandleFunc("/income_request/last", rc.MakeLastRequestHandler(&h))
+	http.HandleFunc("/income_request/all", rc.MakeAllRequestsHandler(&h))
 
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatal(err)

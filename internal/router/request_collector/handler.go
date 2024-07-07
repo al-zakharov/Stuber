@@ -41,10 +41,10 @@ func MakeCollectorHandler(c map[string][]*RequestRecord, k string, n http.Handle
 	}
 }
 
-func MakeAllRequestsHandler(h []*RequestRecord) http.HandlerFunc {
+func MakeAllRequestsHandler(h *[]*RequestRecord) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, h)
+		json.NewEncoder(w).Encode(h)
 	}
 }
 
