@@ -21,7 +21,7 @@ func Run(stubCollection []*stub.Stub) {
 
 	http.HandleFunc("/income_request/last", rc.MakeLastRequestHandler(&h))
 	http.HandleFunc("/income_request/all", rc.MakeAllRequestsHandler(&h))
-	http.HandleFunc("/income_request", rc.MakeGetCollectionHandler(&h))
+	http.HandleFunc("/income_request", rc.MakeGetCollectionHandler(sh))
 
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatal(err)

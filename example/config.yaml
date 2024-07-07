@@ -2,12 +2,6 @@ collection:
   custom_name:
     http_method: GET
     path: /api/lol/kek
-    body: |
-      {
-        "test": 123,
-        "name": "yoda",
-        "prices": [123.123,321.321]
-      }
     body_path: ./json/test.json
     status: 200
     collect_params:

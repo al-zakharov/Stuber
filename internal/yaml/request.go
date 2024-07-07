@@ -21,7 +21,7 @@ type Stub struct {
 
 type CollectParams struct {
 	JsonPath   string `yaml:"json_path"`
-	QueryParam string `yaml:"json_path"`
+	QueryParam string `yaml:"query_param"`
 }
 
 func NewStubCollection(stubFilePath string) (*StubCollection, error) {
@@ -31,7 +31,7 @@ func NewStubCollection(stubFilePath string) (*StubCollection, error) {
 	}
 
 	var c StubCollection
-	if err := yaml.Unmarshal(f, &c); err != nil {
+	if err = yaml.Unmarshal(f, &c); err != nil {
 		return nil, err
 	}
 
