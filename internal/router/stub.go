@@ -5,8 +5,9 @@ type StubsMapper interface {
 }
 
 type Stub struct {
-	HttpMethod string
-	Path       string
-	Body       string
-	Status     int
+	HttpMethod   string
+	Path         string
+	Body         string
+	Status       int
+	RequestIdKey string
 }
