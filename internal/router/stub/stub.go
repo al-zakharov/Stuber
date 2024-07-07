@@ -1,5 +1,10 @@
 package stub
 
+const (
+	CollectTypeJsonPath   = "JsonPath"
+	CollectTypeQueryParam = "QueryParam"
+)
+
 type StubsMapper interface {
 	MapToStubs() []*Stub
 }
@@ -13,5 +18,6 @@ type Stub struct {
 }
 
 type CollectParams struct {
+	Type  string
 	Value string
 }

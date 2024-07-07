@@ -11,6 +11,7 @@ collection:
     body_path: ./json/test.json
     status: 200
     collect_params:
+      query_param: "test_query"
       json_path: "collect_key"
 
   custom_name2:
@@ -46,3 +47,4 @@ collection:
     status: 201
     collect_params:
       json_path: "collect_key"
+      query_param: "test_query"

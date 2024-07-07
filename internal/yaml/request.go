@@ -20,7 +20,8 @@ type Stub struct {
 }
 
 type CollectParams struct {
-	JsonPath string `yaml:"json_path"`
+	JsonPath   string `yaml:"json_path"`
+	QueryParam string `yaml:"json_path"`
 }
 
 func NewStubCollection(stubFilePath string) (*StubCollection, error) {
@@ -40,8 +41,9 @@ func NewStubCollection(stubFilePath string) (*StubCollection, error) {
 func (c *StubCollection) MapToStubs() []*stub.Stub {
 	s := make([]*stub.Stub, 0)
 	for _, i := range c.Items {
+		var cp *stub.CollectParams
 		if i.CollectParams != nil {
-
+			cp = &stub.CollectParams{}
 		}
 
 		s = append(s, &stub.Stub{
@@ -49,7 +51,7 @@ func (c *StubCollection) MapToStubs() []*stub.Stub {
 			Path:          i.Path,
 			Body:          i.Body,
 			Status:        i.Status,
-			CollectParams: collectSettings,
+			CollectParams: cp,
 		})
 	}
 

@@ -2,8 +2,7 @@ package request_collector
 
 import "encoding/json"
 
-const SaveRequestParam = "saveRequestParam"
-const IncomeRequestParam = "incomeRequestParam"
+const SearchRequestParam = "searchRequestParam"
 
 type RequestRecord struct {
 	HTTPMethod string          `json:"http_method"`

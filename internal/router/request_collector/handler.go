@@ -22,31 +22,23 @@ func MakeHistoryHandler(h *[]*RequestRecord, n http.Handler) http.HandlerFunc {
 
 func MakeCollectorHandler(c map[string][]*RequestRecord, cp *stub.CollectParams, n http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		rp := r.URL.Query().Get(SaveRequestParam)
-		if rp != "" {
+		if cp != nil {
 			b, _ := io.ReadAll(r.Body)
 			ub, _ := unmarshalBody(b)
+			key := ""
 
-			if _, ok := c[rp]; !ok {
-				c[rp] = make([]*RequestRecord, 0)
+			switch cp.Type {
+			case stub.CollectTypeJsonPath:
+				key = gjson.GetBytes(b, cp.Value).String()
+			case stub.CollectTypeQueryParam:
+				key = r.URL.Query().Get(cp.Value)
 			}
 
-			c[rp] = append(c[rp], &RequestRecord{
-				HTTPMethod: r.Method,
-				URL:        r.URL.String(),
-				Body:       ub,
-			})
-		} else if cp != nil && cp.Value != "" {
-			b, _ := io.ReadAll(r.Body)
-			ub, _ := unmarshalBody(b)
-
-			k := gjson.GetBytes(b, cp.Value).String()
-
-			if _, ok := c[k]; !ok {
-				c[k] = make([]*RequestRecord, 0)
+			if _, ok := c[key]; !ok {
+				c[key] = make([]*RequestRecord, 0)
 			}
 
-			c[k] = append(c[k], &RequestRecord{
+			c[key] = append(c[key], &RequestRecord{
 				HTTPMethod: r.Method,
 				URL:        r.URL.String(),
 				Body:       ub,
@@ -75,9 +67,9 @@ func MakeLastRequestHandler(h *[]*RequestRecord) http.HandlerFunc {
 
 func MakeGetCollectionHandler(c map[string][]*RequestRecord) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		gp := r.URL.Query().Get(SaveRequestParam)
+		srp := r.URL.Query().Get(SearchRequestParam)
 		w.WriteHeader(http.StatusOK)
-		if e, ok := c[q]; ok {
+		if e, ok := c[srp]; ok {
 			json.NewEncoder(w).Encode(e)
 		}
 	}
