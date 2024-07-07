@@ -19,14 +19,19 @@ func MakeHistoryHandler(h *[]*RequestRecord, n http.Handler) http.HandlerFunc {
 			return
 		}
 
-		ub, err := unmarshalBody(b)
-		if err != nil {
-			log.Printf("Error unmarshaling request body: %v", err)
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		var ub json.RawMessage
+		if len(b) > 0 {
+			ub, err = unmarshalBody(b)
+			if err != nil {
+				log.Printf("Error unmarshaling request body: %v", err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			}
+		} else {
+			ub = nil
 		}
 
 		r.Body = io.NopCloser(bytes.NewBuffer(b))
-		*h = append(*h, NewRequestRecord(r.Method, r.URL.String(), ub))
+		*h = append(*h, NewRequestRecord(r.Method, r.URL.String(), &ub))
 
 		n.ServeHTTP(w, r)
 	}
@@ -42,10 +47,15 @@ func MakeCollectorHandler(c map[string][]*RequestRecord, cp *stub.CollectParams,
 				return
 			}
 
-			ub, err := unmarshalBody(b)
-			if err != nil {
-				log.Printf("Error unmarshaling request body: %v", err)
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			var ub json.RawMessage
+			if len(b) > 0 {
+				ub, err = unmarshalBody(b)
+				if err != nil {
+					log.Printf("Error unmarshaling request body: %v", err)
+					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				}
+			} else {
+				ub = nil
 			}
 
 			key := ""
@@ -64,7 +74,7 @@ func MakeCollectorHandler(c map[string][]*RequestRecord, cp *stub.CollectParams,
 			c[key] = append(c[key], &RequestRecord{
 				HTTPMethod: r.Method,
 				URL:        r.URL.String(),
-				Body:       ub,
+				Body:       &ub,
 			})
 		}
 

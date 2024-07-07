@@ -1,9 +1,10 @@
 {
-  "test": 123,
-  "name": "yoda",
-  "prices": [
+  "id": 1,
+  "country": "Cyprus",
+  "city": "Limassol",
+  "cord": [
     123.123,
     321.321
   ],
-  "city": "Limassol"
+  "is_good": true
 }

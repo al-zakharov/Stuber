@@ -8,4 +8,4 @@ services:
       - "8080:8080"
     volumes:
       - ./example:/example
-    command: [ "up", "-f", "/example/config.yaml" ]
+    command: [ "up", "-f", "/example/collection.yaml" ]

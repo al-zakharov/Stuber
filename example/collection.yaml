@@ -1,0 +1,31 @@
+collection:
+  foo:
+    http_method: GET
+    path: /api/foo
+    body_path: ./example/json/test.json
+    status: 200
+    collect_params:
+      query_param: "x-request-id"
+
+  bar:
+    http_method: POST
+    path: /api/bar
+    body: |
+      {
+        "id": 2,
+        "country": "Greece",
+        "city": "Rodos",
+        "cord": [
+          245.245,
+          542.542
+        ],
+        "is_good": true
+      }
+    status: 201
+    collect_params:
+      json_path: "collect_key"
+
+  baz:
+    http_method: DELETE
+    path: /api/baz
+    status: 204

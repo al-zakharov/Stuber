@@ -5,12 +5,12 @@ import "encoding/json"
 const SearchRequestParam = "searchRequestParam"
 
 type RequestRecord struct {
-	HTTPMethod string          `json:"http_method"`
-	URL        string          `json:"url"`
-	Body       json.RawMessage `json:"body"`
+	HTTPMethod string           `json:"http_method"`
+	URL        string           `json:"url"`
+	Body       *json.RawMessage `json:"body"`
 }
 
-func NewRequestRecord(HTTPMethod string, URL string, Body json.RawMessage) *RequestRecord {
+func NewRequestRecord(HTTPMethod string, URL string, Body *json.RawMessage) *RequestRecord {
 	return &RequestRecord{
 		HTTPMethod: HTTPMethod,
 		URL:        URL,
