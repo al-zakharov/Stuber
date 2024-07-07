@@ -28,45 +28,32 @@ type CollectParams struct {
 func NewStubCollection(stubFilePath string) (*StubCollection, error) {
 	f, err := os.ReadFile(stubFilePath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read stub file: %w", err)
 	}
 
 	var c StubCollection
 	if err = yaml.Unmarshal(f, &c); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to unmarshal stub file: %w", err)
 	}
 
 	return &c, nil
 }
 
-func (c *StubCollection) MapToStubs() []*stub.Stub {
-	s := make([]*stub.Stub, 0)
+func (c *StubCollection) MapToStubs() ([]*stub.Stub, error) {
+	if len(c.Items) == 0 {
+		return nil, nil
+	}
+
+	s := make([]*stub.Stub, 0, len(c.Items))
 	for _, i := range c.Items {
 		var cp *stub.CollectParams
 		if i.CollectParams != nil {
-			if i.CollectParams.QueryParam != "" {
-				cp = &stub.CollectParams{
-					Type:  stub.CollectTypeQueryParam,
-					Value: i.CollectParams.QueryParam,
-				}
-			} else if i.CollectParams.JsonPath != "" {
-				cp = &stub.CollectParams{
-					Type:  stub.CollectTypeJsonPath,
-					Value: i.CollectParams.JsonPath,
-				}
-			}
+			cp = i.mapStubCollectParam()
 		}
 
-		body := ""
-		if i.Body != "" {
-			body = i.Body
-		} else if i.BodyPath != "" {
-			fc, err := os.ReadFile(i.BodyPath)
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
-			body = string(fc)
+		body, err := i.getBodyContent()
+		if err != nil {
+			return nil, err
 		}
 
 		s = append(s, &stub.Stub{
@@ -78,5 +65,37 @@ func (c *StubCollection) MapToStubs() []*stub.Stub {
 		})
 	}
 
-	return s
+	return s, nil
+}
+
+func (s *Stub) mapStubCollectParam() *stub.CollectParams {
+	var scp stub.CollectParams
+	if s.CollectParams.QueryParam != "" {
+		scp = stub.CollectParams{
+			Type:  stub.CollectTypeQueryParam,
+			Value: s.CollectParams.QueryParam,
+		}
+	} else if s.CollectParams.JsonPath != "" {
+		scp = stub.CollectParams{
+			Type:  stub.CollectTypeJsonPath,
+			Value: s.CollectParams.JsonPath,
+		}
+	}
+
+	return &scp
+}
+
+func (s *Stub) getBodyContent() (string, error) {
+	body := ""
+	if s.Body != "" {
+		body = s.Body
+	} else if s.BodyPath != "" {
+		fc, err := os.ReadFile(s.BodyPath)
+		if err != nil {
+			return "", fmt.Errorf("failed to read body file: %w", err)
+		}
+		body = string(fc)
+	}
+
+	return body, nil
 }
