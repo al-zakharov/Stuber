@@ -1,6 +1,7 @@
 package yaml
 
 import (
+	"fmt"
 	"gopkg.in/yaml.v3"
 	"os"
 	"stuber/internal/router/stub"
@@ -43,13 +44,35 @@ func (c *StubCollection) MapToStubs() []*stub.Stub {
 	for _, i := range c.Items {
 		var cp *stub.CollectParams
 		if i.CollectParams != nil {
-			cp = &stub.CollectParams{}
+			if i.CollectParams.QueryParam != "" {
+				cp = &stub.CollectParams{
+					Type:  stub.CollectTypeQueryParam,
+					Value: i.CollectParams.QueryParam,
+				}
+			} else if i.CollectParams.JsonPath != "" {
+				cp = &stub.CollectParams{
+					Type:  stub.CollectTypeJsonPath,
+					Value: i.CollectParams.JsonPath,
+				}
+			}
+		}
+
+		body := ""
+		if i.Body != "" {
+			body = i.Body
+		} else if i.BodyPath != "" {
+			fc, err := os.ReadFile(i.BodyPath)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			body = string(fc)
 		}
 
 		s = append(s, &stub.Stub{
 			HttpMethod:    i.HttpMethod,
 			Path:          i.Path,
-			Body:          i.Body,
+			Body:          body,
 			Status:        i.Status,
 			CollectParams: cp,
 		})

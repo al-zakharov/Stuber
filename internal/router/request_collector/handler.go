@@ -1,6 +1,7 @@
 package request_collector
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/tidwall/gjson"
 	"io"
@@ -13,7 +14,7 @@ func MakeHistoryHandler(h *[]*RequestRecord, n http.Handler) http.HandlerFunc {
 		//TODO handle error
 		b, _ := io.ReadAll(r.Body)
 		ub, _ := unmarshalBody(b)
-
+		r.Body = io.NopCloser(bytes.NewBuffer(b))
 		*h = append(*h, NewRequestRecord(r.Method, r.URL.String(), ub))
 
 		n.ServeHTTP(w, r)
