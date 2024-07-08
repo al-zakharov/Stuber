@@ -3,6 +3,7 @@ package stub
 const (
 	CollectTypeJsonPath   = "JsonPath"
 	CollectTypeQueryParam = "QueryParam"
+	CollectTypePathParam  = "PathParam"
 )
 
 type StubsMapper interface {

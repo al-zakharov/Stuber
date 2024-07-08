@@ -71,7 +71,7 @@ collection:
 ```
 
 # Save incoming requests
-By default, all incoming requests are saved. However, if you want to filter incoming requests, there are two mechanisms available. Note that filtering is specified for each request individually.
+By default, all incoming requests are saved. However, if you want to filter incoming requests, there are three mechanisms available. Note that filtering is specified for each request individually.
 1. collect_params with query_param: Specify the name of an HTTP query parameter. By adding this parameter to your requests, you can filter incoming requests based on its value.
 ```yaml
 collection:
@@ -85,6 +85,7 @@ collection:
 ```
 2. collect_params with json_path: Specify a JSONPath. The value of the field found using JSONPath in the incoming request body will be saved for filtering.
 ```yaml
+collection:
   bar:
     http_method: POST
     path: /api/bar
@@ -102,6 +103,27 @@ collection:
     status: 201
     collect_params:
       json_path: "collect_key"
+```
+3. collect_params with path_param: Specify Pathparam. The value of the field found at the specified path_param will be saved for filtering.
+```yaml
+collection:
+  qux:
+    http_method: PUT
+    path: /api/:id/qux/:userId
+    body: |
+      {
+        "id": 3,
+        "country": "Austria",
+        "city": "Liezen",
+        "cord": [
+          511.115,
+          312.213
+        ],
+        "is_good": true
+      }
+    status: 200
+    collect_params:
+      path_param: "userId"
 ```
 
 # Retrieving Incoming Requests
@@ -121,4 +143,4 @@ curl http://localhost:8080/income_request/last
 curl 'http://localhost:8080/income_request?searchRequestParam=my_param' 
 ```
 To retrieve filtered requests, use the `searchRequestParam` query parameter. 
-Pass the value you saved using `query_param` or `json_path` in the `searchRequestParam` query parameter to get an array of all requests with this value.
+Pass the value you saved using `query_param`, `json_path` or `path_param` in the `searchRequestParam` query parameter to get an array of all requests with this value.
