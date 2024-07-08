@@ -29,3 +29,21 @@ collection:
     http_method: DELETE
     path: /api/baz
     status: 204
+
+  qux:
+    http_method: PUT
+    path: /api/:id/qux/:userId
+    body: |
+      {
+        "id": 3,
+        "country": "Austria",
+        "city": "Liezen",
+        "cord": [
+          511.115,
+          312.213
+        ],
+        "is_good": true
+      }
+    status: 200
+    collect_params:
+      path_param: "userId"

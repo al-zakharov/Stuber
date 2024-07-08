@@ -45,7 +45,10 @@ func runUpStub(cmd *cobra.Command) error {
 		return fmt.Errorf("failed to compile stub collection: %w", err)
 	}
 
-	router.Run(c)
+	err = router.Run(c)
+	if err != nil {
+		return fmt.Errorf("failed to run server: %w", err)
+	}
 
 	return nil
 }

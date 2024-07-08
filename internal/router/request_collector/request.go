@@ -1,6 +1,10 @@
 package request_collector
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+	"regexp"
+)
 
 const SearchRequestParam = "searchRequestParam"
 
@@ -25,4 +29,26 @@ func unmarshalBody(b []byte) (json.RawMessage, error) {
 	}
 
 	return j, nil
+}
+
+func extractPathParam(pattern, path, param string) string {
+	rePattern := regexp.MustCompile(`:([^/]+)`).ReplaceAllStringFunc(pattern, func(m string) string {
+		return fmt.Sprintf("(?P<%s>[^/]+)", m[1:])
+	})
+
+	re := regexp.MustCompile(rePattern)
+
+	match := re.FindStringSubmatch(path)
+	if match == nil {
+		return ""
+	}
+
+	ns := re.SubexpNames()
+	for i, n := range ns {
+		if n == param {
+			return match[i]
+		}
+	}
+
+	return ""
 }

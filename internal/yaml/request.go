@@ -23,6 +23,7 @@ type Stub struct {
 type CollectParams struct {
 	JsonPath   string `yaml:"json_path"`
 	QueryParam string `yaml:"query_param"`
+	PathParam  string `yaml:"path_param"`
 }
 
 func NewStubCollection(stubFilePath string) (*StubCollection, error) {
@@ -79,6 +80,11 @@ func (s *Stub) mapStubCollectParam() *stub.CollectParams {
 		scp = stub.CollectParams{
 			Type:  stub.CollectTypeJsonPath,
 			Value: s.CollectParams.JsonPath,
+		}
+	} else if s.CollectParams.PathParam != "" {
+		scp = stub.CollectParams{
+			Type:  stub.CollectTypePathParam,
+			Value: s.CollectParams.PathParam,
 		}
 	}
 

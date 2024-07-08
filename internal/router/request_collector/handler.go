@@ -37,9 +37,9 @@ func MakeHistoryHandler(h *[]*RequestRecord, n http.Handler) http.HandlerFunc {
 	}
 }
 
-func MakeCollectorHandler(c map[string][]*RequestRecord, cp *stub.CollectParams, n http.Handler) http.HandlerFunc {
+func MakeCollectorHandler(c map[string][]*RequestRecord, s *stub.Stub, n http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if cp != nil {
+		if s.CollectParams != nil {
 			b, err := io.ReadAll(r.Body)
 			if err != nil {
 				log.Printf("Error reading request body: %v", err)
@@ -60,11 +60,13 @@ func MakeCollectorHandler(c map[string][]*RequestRecord, cp *stub.CollectParams,
 
 			key := ""
 
-			switch cp.Type {
+			switch s.CollectParams.Type {
 			case stub.CollectTypeJsonPath:
-				key = gjson.GetBytes(b, cp.Value).String()
+				key = gjson.GetBytes(b, s.CollectParams.Value).String()
 			case stub.CollectTypeQueryParam:
-				key = r.URL.Query().Get(cp.Value)
+				key = r.URL.Query().Get(s.CollectParams.Value)
+			case stub.CollectTypePathParam:
+				key = extractPathParam(s.Path, r.URL.String(), s.CollectParams.Value)
 			}
 
 			if _, ok := c[key]; !ok {
