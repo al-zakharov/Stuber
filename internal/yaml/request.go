@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"gopkg.in/yaml.v3"
 	"os"
-	"stuber/internal/router/stub"
+	"stuber/internal/server/stub"
 )
 
 type StubCollection struct {
@@ -46,19 +46,16 @@ func (c *StubCollection) MapToStubs() ([]*stub.Stub, error) {
 		return nil, nil
 	}
 
-	s := make([]*stub.Stub, 0, len(c.Items))
+	var stubs []*stub.Stub
 	for _, i := range c.Items {
-		var cp *stub.CollectParams
-		if i.CollectParams != nil {
-			cp = i.mapStubCollectParam()
-		}
+		cp := i.mapStubCollectParam()
 
 		body, err := i.getBodyContent()
 		if err != nil {
 			return nil, err
 		}
 
-		s = append(s, &stub.Stub{
+		stubs = append(stubs, &stub.Stub{
 			HttpMethod:    i.HttpMethod,
 			Path:          i.Path,
 			Body:          body,
@@ -68,42 +65,47 @@ func (c *StubCollection) MapToStubs() ([]*stub.Stub, error) {
 		})
 	}
 
-	return s, nil
+	return stubs, nil
 }
 
 func (s *Stub) mapStubCollectParam() *stub.CollectParams {
-	var scp stub.CollectParams
-	if s.CollectParams.QueryParam != "" {
-		scp = stub.CollectParams{
+	if s.CollectParams == nil {
+		return nil
+	}
+
+	switch {
+	case s.CollectParams.QueryParam != "":
+		return &stub.CollectParams{
 			Type:  stub.CollectTypeQueryParam,
 			Value: s.CollectParams.QueryParam,
 		}
-	} else if s.CollectParams.JsonPath != "" {
-		scp = stub.CollectParams{
-			Type:  stub.CollectTypeJsonPath,
-			Value: s.CollectParams.JsonPath,
-		}
-	} else if s.CollectParams.PathParam != "" {
-		scp = stub.CollectParams{
+	case s.CollectParams.PathParam != "":
+		return &stub.CollectParams{
 			Type:  stub.CollectTypePathParam,
 			Value: s.CollectParams.PathParam,
 		}
+	case s.CollectParams.JsonPath != "":
+		return &stub.CollectParams{
+			Type:  stub.CollectTypeJsonPath,
+			Value: s.CollectParams.JsonPath,
+		}
+	default:
+		return nil
 	}
-
-	return &scp
 }
 
 func (s *Stub) getBodyContent() (string, error) {
-	body := ""
 	if s.Body != "" {
-		body = s.Body
-	} else if s.BodyPath != "" {
+		return s.Body, nil
+	}
+
+	if s.BodyPath != "" {
 		fc, err := os.ReadFile(s.BodyPath)
 		if err != nil {
 			return "", fmt.Errorf("failed to read body file: %w", err)
 		}
-		body = string(fc)
+		return string(fc), nil
 	}
 
-	return body, nil
+	return "", nil
 }

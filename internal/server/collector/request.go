@@ -1,4 +1,4 @@
-package request_collector
+package collector
 
 import (
 	"encoding/json"

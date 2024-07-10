@@ -1,4 +1,4 @@
-package request_collector
+package collector
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"stuber/internal/router/stub"
+	"stuber/internal/server/stub"
 )
 
 func MakeHistoryHandler(h *[]*RequestRecord, n http.Handler) http.HandlerFunc {
