@@ -29,7 +29,7 @@ func MakeCollectorHandler(c map[string][]*RequestRecord, s *stub.Stub, next http
 		if s.CollectParams != nil {
 			b, ub := unmarshalRequestBody(r)
 			key, err := getCollectKeyFromRequest(s, r, b)
-			if err != nil {
+			if err == nil {
 				m.Lock()
 				if _, ok := c[key]; !ok {
 					c[key] = make([]*RequestRecord, 0)
