@@ -75,7 +75,7 @@ func MakeCollectorHandler(c map[string][]*RequestRecord, s *stub.Stub, n http.Ha
 
 			c[key] = append(c[key], &RequestRecord{
 				HTTPMethod: r.Method,
-				URL:        r.URL.String(),
+				URL:        r.URL.Path,
 				Body:       &ub,
 			})
 		}

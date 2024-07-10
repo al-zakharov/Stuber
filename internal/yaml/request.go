@@ -17,6 +17,7 @@ type Stub struct {
 	Body          string         `yaml:"body"`
 	BodyPath      string         `yaml:"body_path"`
 	Status        int            `yaml:"status"`
+	DynamicBody   bool           `yaml:"dynamic_body"`
 	CollectParams *CollectParams `yaml:"collect_params"`
 }
 
@@ -62,6 +63,7 @@ func (c *StubCollection) MapToStubs() ([]*stub.Stub, error) {
 			Path:          i.Path,
 			Body:          body,
 			Status:        i.Status,
+			DynamicBody:   i.DynamicBody,
 			CollectParams: cp,
 		})
 	}

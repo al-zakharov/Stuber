@@ -2,6 +2,8 @@ package router
 
 import (
 	"fmt"
+	"io"
+	"log"
 	"net/http"
 	"regexp"
 	rc "stuber/internal/router/request_collector"
@@ -15,8 +17,8 @@ type Router struct {
 }
 
 type Route struct {
-	pattern *regexp.Regexp
-	stub    *stub.Stub
+	Pattern *regexp.Regexp
+	Stub    *stub.Stub
 }
 
 func NewRouter(stubCollection []*stub.Stub) *Router {
@@ -32,8 +34,8 @@ func NewRouter(stubCollection []*stub.Stub) *Router {
 		})
 		re := regexp.MustCompile("^" + rePattern + "$")
 		r.routes = append(r.routes, &Route{
-			pattern: re,
-			stub:    s,
+			Pattern: re,
+			Stub:    s,
 		})
 	}
 
@@ -42,8 +44,8 @@ func NewRouter(stubCollection []*stub.Stub) *Router {
 
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	for _, route := range r.routes {
-		if route.pattern.MatchString(req.URL.Path) {
-			rc.MakeHistoryHandler(&r.h, rc.MakeCollectorHandler(r.sh, route.stub, route.stub.MakeStubHandler())).ServeHTTP(w, req)
+		if route.Pattern.MatchString(req.URL.Path) {
+			rc.MakeHistoryHandler(&r.h, rc.MakeCollectorHandler(r.sh, route.Stub, route.Stub.MakeStubHandler())).ServeHTTP(w, req)
 			return
 		}
 	}
@@ -56,6 +58,7 @@ func Run(stubCollection []*stub.Stub) error {
 	http.HandleFunc("/income_request/last", rc.MakeLastRequestHandler(&router.h))
 	http.HandleFunc("/income_request/all", rc.MakeAllRequestsHandler(&router.h))
 	http.HandleFunc("/income_request", rc.MakeGetCollectionHandler(router.sh))
+	http.HandleFunc("/dynamic_body", MakeDynamicBodyHandler(router.routes))
 	http.Handle("/", router)
 
 	if err := http.ListenAndServe(":8080", nil); err != nil {
@@ -63,4 +66,20 @@ func Run(stubCollection []*stub.Stub) error {
 	}
 
 	return nil
+}
+
+func MakeDynamicBodyHandler(routes []*Route) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		for _, i := range routes {
+			if i.Pattern.MatchString(r.URL.Path) {
+				b, err := io.ReadAll(r.Body)
+				if err != nil {
+					log.Printf("Error reading request body: %v", err)
+					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+					return
+				}
+				i.Stub.Body = string(b)
+			}
+		}
+	}
 }
