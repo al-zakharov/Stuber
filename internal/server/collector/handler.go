@@ -3,84 +3,48 @@ package collector
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/tidwall/gjson"
 	"io"
 	"log"
 	"net/http"
 	"stuber/internal/server/stub"
+	"sync"
 )
 
-func MakeHistoryHandler(h *[]*RequestRecord, n http.Handler) http.HandlerFunc {
+func MakeHistoryHandler(h *[]*RequestRecord, next http.Handler, m *sync.Mutex) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		b, err := io.ReadAll(r.Body)
-		if err != nil {
-			log.Printf("Error reading request body: %v", err)
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
+		_, ub := unmarshalRequestBody(r)
 
-		var ub json.RawMessage
-		if len(b) > 0 {
-			ub, err = unmarshalBody(b)
-			if err != nil {
-				log.Printf("Error unmarshaling request body: %v", err)
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			}
-		} else {
-			ub = nil
-		}
-
-		r.Body = io.NopCloser(bytes.NewBuffer(b))
+		m.Lock()
 		*h = append(*h, NewRequestRecord(r.Method, r.URL.String(), &ub))
+		m.Unlock()
 
-		n.ServeHTTP(w, r)
+		next.ServeHTTP(w, r)
 	}
 }
 
-func MakeCollectorHandler(c map[string][]*RequestRecord, s *stub.Stub, n http.Handler) http.HandlerFunc {
+func MakeCollectorHandler(c map[string][]*RequestRecord, s *stub.Stub, next http.Handler, m *sync.Mutex) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if s.CollectParams != nil {
-			b, err := io.ReadAll(r.Body)
+			b, ub := unmarshalRequestBody(r)
+			key, err := getCollectKeyFromRequest(s, r, b)
 			if err != nil {
-				log.Printf("Error reading request body: %v", err)
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-				return
-			}
-
-			var ub json.RawMessage
-			if len(b) > 0 {
-				ub, err = unmarshalBody(b)
-				if err != nil {
-					log.Printf("Error unmarshaling request body: %v", err)
-					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				m.Lock()
+				if _, ok := c[key]; !ok {
+					c[key] = make([]*RequestRecord, 0)
 				}
-			} else {
-				ub = nil
+
+				c[key] = append(c[key], &RequestRecord{
+					HTTPMethod: r.Method,
+					URL:        r.URL.Path,
+					Body:       &ub,
+				})
+				m.Unlock()
 			}
-
-			key := ""
-
-			switch s.CollectParams.Type {
-			case stub.CollectTypeJsonPath:
-				key = gjson.GetBytes(b, s.CollectParams.Value).String()
-			case stub.CollectTypeQueryParam:
-				key = r.URL.Query().Get(s.CollectParams.Value)
-			case stub.CollectTypePathParam:
-				key = extractPathParam(s.Path, r.URL.String(), s.CollectParams.Value)
-			}
-
-			if _, ok := c[key]; !ok {
-				c[key] = make([]*RequestRecord, 0)
-			}
-
-			c[key] = append(c[key], &RequestRecord{
-				HTTPMethod: r.Method,
-				URL:        r.URL.Path,
-				Body:       &ub,
-			})
 		}
 
-		n.ServeHTTP(w, r)
+		next.ServeHTTP(w, r)
 	}
 }
 
@@ -113,5 +77,47 @@ func MakeGetCollectionHandler(c map[string][]*RequestRecord) http.HandlerFunc {
 				log.Printf("Error encoding response: %v", err)
 			}
 		}
+	}
+}
+
+func unmarshalRequestBody(r *http.Request) ([]byte, json.RawMessage) {
+	b, err := readRequestBody(r)
+	if err != nil {
+		log.Printf("Error reading request body: %v", err)
+		return nil, nil
+	}
+
+	var ub json.RawMessage
+	if len(b) > 0 {
+		ub, err = unmarshalBody(b)
+		if err != nil {
+			log.Printf("Error unmarshaling request body: %v", err)
+			return nil, nil
+		}
+	}
+
+	return b, ub
+}
+
+func readRequestBody(r *http.Request) ([]byte, error) {
+	b, err := io.ReadAll(r.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	r.Body = io.NopCloser(bytes.NewBuffer(b))
+	return b, nil
+}
+
+func getCollectKeyFromRequest(s *stub.Stub, r *http.Request, body []byte) (string, error) {
+	switch s.CollectParams.Type {
+	case stub.CollectTypeJsonPath:
+		return gjson.GetBytes(body, s.CollectParams.Value).String(), nil
+	case stub.CollectTypeQueryParam:
+		return r.URL.Query().Get(s.CollectParams.Value), nil
+	case stub.CollectTypePathParam:
+		return extractPathParam(s.Path, r.URL.String(), s.CollectParams.Value), nil
+	default:
+		return "", fmt.Errorf("unsupported collect type")
 	}
 }
