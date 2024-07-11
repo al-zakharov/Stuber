@@ -42,7 +42,8 @@ func NewRouter(stubCollection []*stub.Stub) *Router {
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	for _, i := range r.routes {
 		if i.Pattern.MatchString(req.URL.Path) {
-			collector.MakeHistoryHandler(&r.h, collector.MakeCollectorHandler(r.sh, i.Stub, i.Stub.MakeStubHandler(), &r.m), &r.m).ServeHTTP(w, req)
+			handler := collector.MakeHistoryHandler(&r.h, collector.MakeCollectorHandler(r.sh, i.Stub, i.Stub.MakeStubHandler(), &r.m), &r.m)
+			handler.ServeHTTP(w, req)
 			return
 		}
 	}

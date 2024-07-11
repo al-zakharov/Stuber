@@ -19,7 +19,10 @@ func MakeDynamicBodyHandler(routes []*route.Route) http.HandlerFunc {
 					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 					return
 				}
-				i.Stub.Body = string(b)
+
+				if i.Stub.DynamicBody {
+					i.Stub.Body = string(b)
+				}
 			}
 		}
 	}
