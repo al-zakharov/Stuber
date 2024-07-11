@@ -9,6 +9,8 @@ import (
 
 func MakeDynamicBodyHandler(routes []*route.Route) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
 		for _, i := range routes {
 			if i.Pattern.MatchString(r.URL.Path) {
 				b, err := io.ReadAll(r.Body)

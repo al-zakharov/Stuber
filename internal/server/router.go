@@ -8,12 +8,14 @@ import (
 	"stuber/internal/server/dynamic"
 	"stuber/internal/server/route"
 	"stuber/internal/server/stub"
+	"sync"
 )
 
 type Router struct {
 	routes []*route.Route
 	h      []*collector.RequestRecord
 	sh     map[string][]*collector.RequestRecord
+	m      sync.RWMutex
 }
 
 func NewRouter(stubCollection []*stub.Stub) *Router {
@@ -40,7 +42,7 @@ func NewRouter(stubCollection []*stub.Stub) *Router {
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	for _, i := range r.routes {
 		if i.Pattern.MatchString(req.URL.Path) {
-			collector.MakeHistoryHandler(&r.h, collector.MakeCollectorHandler(r.sh, i.Stub, i.Stub.MakeStubHandler())).ServeHTTP(w, req)
+			collector.MakeHistoryHandler(&r.h, collector.MakeCollectorHandler(r.sh, i.Stub, i.Stub.MakeStubHandler(), &r.m), &r.m).ServeHTTP(w, req)
 			return
 		}
 	}

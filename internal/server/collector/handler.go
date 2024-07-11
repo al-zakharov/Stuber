@@ -12,25 +12,26 @@ import (
 	"sync"
 )
 
-func MakeHistoryHandler(h *[]*RequestRecord, next http.Handler, m *sync.Mutex) http.HandlerFunc {
+func MakeHistoryHandler(h *[]*RequestRecord, next http.Handler, m *sync.RWMutex) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		_, ub := unmarshalRequestBody(r)
 
-		m.Lock()
+		m.RLock()
 		*h = append(*h, NewRequestRecord(r.Method, r.URL.String(), &ub))
-		m.Unlock()
+		m.RUnlock()
 
 		next.ServeHTTP(w, r)
 	}
 }
 
-func MakeCollectorHandler(c map[string][]*RequestRecord, s *stub.Stub, next http.Handler, m *sync.Mutex) http.HandlerFunc {
+func MakeCollectorHandler(c map[string][]*RequestRecord, s *stub.Stub, next http.Handler, m *sync.RWMutex) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
 		if s.CollectParams != nil {
 			b, ub := unmarshalRequestBody(r)
 			key, err := getCollectKeyFromRequest(s, r, b)
 			if err == nil {
-				m.Lock()
+				m.RLock()
 				if _, ok := c[key]; !ok {
 					c[key] = make([]*RequestRecord, 0)
 				}
@@ -40,7 +41,7 @@ func MakeCollectorHandler(c map[string][]*RequestRecord, s *stub.Stub, next http
 					URL:        r.URL.Path,
 					Body:       &ub,
 				})
-				m.Unlock()
+				m.RUnlock()
 			}
 		}
 
