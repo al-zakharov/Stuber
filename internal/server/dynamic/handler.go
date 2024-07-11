@@ -11,6 +11,11 @@ func MakeDynamicBodyHandler(routes []*route.Route) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
+		if r.Method != http.MethodPost {
+			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
 		for _, i := range routes {
 			if i.Pattern.MatchString(r.URL.Path) {
 				b, err := io.ReadAll(r.Body)
