@@ -188,7 +188,7 @@ To set the response body that your mock should return, use the `/dynamic_body` e
 In the `body` of this request, provide the content you want the mock to return using the body parameter, and specify the request path that should return this body using the `path` parameter. For example:
 
 ```shell
-curl -X POST http://localhost:8080/dynamic_body --data '{"path": "/api/users", "body": {"id": 5, "country": "Amsterdam"}}' -H "Content-Type: application/json" -v
+curl -X POST http://localhost:8080/dynamic_body --data '{"path": "/api/users", "body": {"id": 5, "country": "Amsterdam"}}'
 ```
 
 Now, the `/api/users` request will return the specified body `{"id": 5, "country": "Amsterdam"}`.
