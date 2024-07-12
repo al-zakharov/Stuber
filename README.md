@@ -5,6 +5,7 @@ Stuber is a powerful tool for creating mocks. It allows you to:
 * Easily generate mocks from YAML and JSON files.
 * Retrieve the history of requests to the mock.
 * Filter incoming requests.
+* Dynamic mock body replacement.
 
 # Getting started
 
