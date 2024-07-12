@@ -1,4 +1,4 @@
-package request_collector
+package collector
 
 import (
 	"encoding/json"
@@ -14,21 +14,18 @@ type RequestRecord struct {
 	Body       *json.RawMessage `json:"body"`
 }
 
-func NewRequestRecord(HTTPMethod string, URL string, Body *json.RawMessage) *RequestRecord {
+func NewRequestRecord(httpMethod string, url string, body *json.RawMessage) *RequestRecord {
 	return &RequestRecord{
-		HTTPMethod: HTTPMethod,
-		URL:        URL,
-		Body:       Body,
+		HTTPMethod: httpMethod,
+		URL:        url,
+		Body:       body,
 	}
 }
 
 func unmarshalBody(b []byte) (json.RawMessage, error) {
 	var j json.RawMessage
-	if err := json.Unmarshal(b, &j); err != nil {
-		return nil, err
-	}
-
-	return j, nil
+	err := json.Unmarshal(b, &j)
+	return j, err
 }
 
 func extractPathParam(pattern, path, param string) string {

@@ -15,6 +15,7 @@ type Stub struct {
 	Path          string
 	Body          string
 	Status        int
+	DynamicBody   bool
 	CollectParams *CollectParams
 }
 

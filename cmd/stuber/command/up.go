@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"os"
-	"stuber/internal/router"
+	"stuber/internal/server"
 	"stuber/internal/yaml"
 )
 
@@ -45,7 +45,7 @@ func runUpStub(cmd *cobra.Command) error {
 		return fmt.Errorf("failed to compile stub collection: %w", err)
 	}
 
-	err = router.Run(c)
+	err = server.Run(c)
 	if err != nil {
 		return fmt.Errorf("failed to run server: %w", err)
 	}

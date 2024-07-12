@@ -47,3 +47,9 @@ collection:
     status: 200
     collect_params:
       path_param: "userId"
+
+  quiz:
+    http_method: GET
+    path: /api/users
+    status: 200
+    dynamic_body: true
