@@ -10,6 +10,9 @@ collection:
   bar:
     http_method: POST
     path: /api/bar
+    headers:
+      Content-Type: application/json
+      x_test: value
     body: |
       {
         "id": 2,

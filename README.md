@@ -193,6 +193,15 @@ curl -X POST http://localhost:8080/dynamic_body --data '{"path": "/api/users", "
 
 Now, the `/api/users` request will return the specified body `{"id": 5, "country": "Amsterdam"}`.
 
+# Configure headers
+You can add arbitrary HTTP headers to each mock response by specifying a `headers` mapping under the request entry. For example:
+```yaml
+headers:
+  Content-Type: application/json
+  x_test: value
+```
+
+
 # Example YAML Configuration
 
 ```yaml

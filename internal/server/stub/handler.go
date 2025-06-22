@@ -12,6 +12,10 @@ func (s *Stub) MakeStubHandler() http.HandlerFunc {
 			return
 		}
 
+		for k, v := range s.Headers {
+			w.Header().Set(k, v)
+		}
+
 		w.WriteHeader(s.Status)
 		fmt.Fprint(w, s.Body)
 	}

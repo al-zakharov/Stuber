@@ -12,13 +12,14 @@ type StubCollection struct {
 }
 
 type Stub struct {
-	HttpMethod    string         `yaml:"http_method"`
-	Path          string         `yaml:"path"`
-	Body          string         `yaml:"body"`
-	BodyPath      string         `yaml:"body_path"`
-	Status        int            `yaml:"status"`
-	DynamicBody   bool           `yaml:"dynamic_body"`
-	CollectParams *CollectParams `yaml:"collect_params"`
+	HttpMethod    string            `yaml:"http_method"`
+	Path          string            `yaml:"path"`
+	Body          string            `yaml:"body"`
+	BodyPath      string            `yaml:"body_path"`
+	Headers       map[string]string `yaml:"headers"`
+	Status        int               `yaml:"status"`
+	DynamicBody   bool              `yaml:"dynamic_body"`
+	CollectParams *CollectParams    `yaml:"collect_params"`
 }
 
 type CollectParams struct {
@@ -60,6 +61,7 @@ func (c *StubCollection) MapToStubs() ([]*stub.Stub, error) {
 			Path:          i.Path,
 			Body:          body,
 			Status:        i.Status,
+			Headers:       i.Headers,
 			DynamicBody:   i.DynamicBody,
 			CollectParams: cp,
 		})
