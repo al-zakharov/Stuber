@@ -122,3 +122,32 @@ func getCollectKeyFromRequest(s *stub.Stub, r *http.Request, body []byte) (strin
 		return "", fmt.Errorf("unsupported collect type")
 	}
 }
+
+func MakeClearAllRequestsHandler(h *[]*RequestRecord, sh *map[string][]*RequestRecord, m *sync.RWMutex) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        if r.Method != http.MethodDelete {
+            http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+            return
+        }
+
+        m.Lock()
+        defer m.Unlock()
+
+        // Clear both request storage collections
+        *h = make([]*RequestRecord, 0)
+        *sh = make(map[string][]*RequestRecord)
+
+        w.WriteHeader(http.StatusOK)
+        response := struct {
+            Status  string `json:"status"`
+            Message string `json:"message"`
+        }{
+            Status:  "ok",
+            Message: "All income requests cleared",
+        }
+
+        if err := json.NewEncoder(w).Encode(response); err != nil {
+            log.Printf("Error encoding response: %v", err)
+        }
+    }
+}
