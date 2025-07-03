@@ -57,6 +57,7 @@ func Run(stubCollection []*stub.Stub) error {
 	http.HandleFunc("/income_request/all", collector.MakeAllRequestsHandler(&router.h))
 	http.HandleFunc("/income_request", collector.MakeGetCollectionHandler(router.sh))
 	http.HandleFunc("/dynamic_body", dynamic.MakeDynamicBodyHandler(router.routes))
+	http.HandleFunc("/clear", collector.MakeClearAllRequestsHandler(&router.h, &router.sh, &router.m))
 	http.Handle("/", router)
 
 	if err := http.ListenAndServe(":8080", nil); err != nil {

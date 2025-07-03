@@ -169,6 +169,14 @@ To retrieve filtered requests, use the `searchRequestParam` query parameter.
 Pass the value you saved using `query_param`, `json_path` or `path_param` in the `searchRequestParam` query parameter to
 get an array of all requests with this value.
 
+4. Clear all stored requests:
+
+```shell
+curl -X DELETE 'http://localhost:8080/clear'
+```
+
+This will delete all saved income requests and return a 200.
+
 # Dynamically substitute request body
 
 Stuber supports dynamic request body substitution. To enable this, set the `dynamic_body` parameter to true in the YAML
