@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  stuber:
+    image: stuber:local
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./example:/example
+    command: [ "up", "-f", "/example/collection.yaml" ]

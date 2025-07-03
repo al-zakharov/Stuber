@@ -1,0 +1,9 @@
+This project includes software developed by third parties:
+
+1. GJSON - A Go package for parsing JSON.
+   Copyright (c) 2018-2023 Tidwall
+   Licensed under the MIT License (https://github.com/tidwall/gjson/blob/master/LICENSE).
+
+2. Cobra - A library for creating powerful modern CLI applications.
+   Copyright (c) 2015-2023 Steve Francia
+   Licensed under the Apache License 2.0 (https://github.com/spf13/cobra/blob/main/LICENSE.txt).
