@@ -165,6 +165,12 @@ curl http://localhost:8080/income_request/last
 curl 'http://localhost:8080/income_request?searchRequestParam=my_param' 
 ```
 
+4. Clear history requests:
+
+```shell
+curl 'http://localhost:8080/clear' 
+```
+
 To retrieve filtered requests, use the `searchRequestParam` query parameter.
 Pass the value you saved using `query_param`, `json_path` or `path_param` in the `searchRequestParam` query parameter to
 get an array of all requests with this value.

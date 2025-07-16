@@ -15,10 +15,9 @@ import (
 func MakeHistoryHandler(h *[]*RequestRecord, next http.Handler, m *sync.RWMutex) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		_, ub := unmarshalRequestBody(r)
-
-		m.RLock()
+		m.Lock()
 		*h = append(*h, NewRequestRecord(r.Method, r.URL.String(), &ub))
-		m.RUnlock()
+		m.Unlock()
 
 		next.ServeHTTP(w, r)
 	}
@@ -31,7 +30,7 @@ func MakeCollectorHandler(c map[string][]*RequestRecord, s *stub.Stub, next http
 			b, ub := unmarshalRequestBody(r)
 			key, err := getCollectKeyFromRequest(s, r, b)
 			if err == nil {
-				m.RLock()
+				m.Lock()
 				if _, ok := c[key]; !ok {
 					c[key] = make([]*RequestRecord, 0)
 				}
@@ -41,7 +40,7 @@ func MakeCollectorHandler(c map[string][]*RequestRecord, s *stub.Stub, next http
 					URL:        r.URL.Path,
 					Body:       &ub,
 				})
-				m.RUnlock()
+				m.Unlock()
 			}
 		}
 
@@ -49,8 +48,10 @@ func MakeCollectorHandler(c map[string][]*RequestRecord, s *stub.Stub, next http
 	}
 }
 
-func MakeAllRequestsHandler(h *[]*RequestRecord) http.HandlerFunc {
+func MakeAllRequestsHandler(h *[]*RequestRecord, m *sync.RWMutex) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		m.RLock()
+		defer m.RUnlock()
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(h); err != nil {
 			log.Printf("Error encoding response: %v", err)
@@ -58,10 +59,12 @@ func MakeAllRequestsHandler(h *[]*RequestRecord) http.HandlerFunc {
 	}
 }
 
-func MakeLastRequestHandler(h *[]*RequestRecord) http.HandlerFunc {
+func MakeLastRequestHandler(h *[]*RequestRecord, m *sync.RWMutex) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		if len(*h) > 0 {
+			m.RLock()
+			defer m.RUnlock()
 			if err := json.NewEncoder(w).Encode((*h)[len(*h)-1]); err != nil {
 				log.Printf("Error encoding response: %v", err)
 			}
@@ -69,15 +72,27 @@ func MakeLastRequestHandler(h *[]*RequestRecord) http.HandlerFunc {
 	}
 }
 
-func MakeGetCollectionHandler(c map[string][]*RequestRecord) http.HandlerFunc {
+func MakeGetCollectionHandler(c map[string][]*RequestRecord, m *sync.RWMutex) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		srp := r.URL.Query().Get(SearchRequestParam)
 		w.WriteHeader(http.StatusOK)
 		if e, ok := c[srp]; ok {
+			m.RLock()
+			defer m.RUnlock()
 			if err := json.NewEncoder(w).Encode(e); err != nil {
 				log.Printf("Error encoding response: %v", err)
 			}
 		}
+	}
+}
+
+func MakeClearHandler(h *[]*RequestRecord, c *map[string][]*RequestRecord, m *sync.RWMutex) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		m.Lock()
+		defer m.Unlock()
+		*h = make([]*RequestRecord, 0)
+		*c = make(map[string][]*RequestRecord)
 	}
 }
 
