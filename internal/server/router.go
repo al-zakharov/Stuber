@@ -53,10 +53,11 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 func Run(stubCollection []*stub.Stub) error {
 	router := NewRouter(stubCollection)
 
-	http.HandleFunc("/income_request/last", collector.MakeLastRequestHandler(&router.h))
-	http.HandleFunc("/income_request/all", collector.MakeAllRequestsHandler(&router.h))
-	http.HandleFunc("/income_request", collector.MakeGetCollectionHandler(router.sh))
+	http.HandleFunc("/income_request/last", collector.MakeLastRequestHandler(&router.h, &router.m))
+	http.HandleFunc("/income_request/all", collector.MakeAllRequestsHandler(&router.h, &router.m))
+	http.HandleFunc("/income_request", collector.MakeGetCollectionHandler(router.sh, &router.m))
 	http.HandleFunc("/dynamic_body", dynamic.MakeDynamicBodyHandler(router.routes))
+	http.HandleFunc("/clear", collector.MakeClearHandler(&router.h, &router.sh, &router.m))
 	http.Handle("/", router)
 
 	if err := http.ListenAndServe(":8080", nil); err != nil {
